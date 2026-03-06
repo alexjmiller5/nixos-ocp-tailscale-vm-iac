@@ -13,21 +13,7 @@ override.tf.json
 *_override.tf.json
 
 # Nix
-result
-result-*
 secrets.nix
-hardware-configuration.nix
 
-# SSH
-known_hosts
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
+# Claude settings
+.claude
