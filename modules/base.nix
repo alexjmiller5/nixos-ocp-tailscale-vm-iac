@@ -1,15 +1,14 @@
-{ config, pkgs, lib, ... }:
-
+{ config, lib, pkgs, ... }:
+# Consumers ship their tailscale auth key to /etc/nixos/secrets.nix on the VM
+# (see install-infect in consumer deploy stacks). If the file is absent we
+# silently fall back to no auth key, which means tailscaled will not register.
 let
-  secrets = if builtins.pathExists ./secrets.nix
-            then import ./secrets.nix
+  secrets = if builtins.pathExists /etc/nixos/secrets.nix
+            then import /etc/nixos/secrets.nix
             else { tailscaleAuthKey = null; };
 in {
-  # Networking
-  networking.hostName = "oci-vm";
   networking.useDHCP = true;
 
-  # Firewall configuration for Tailscale exit node
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ 22 ];
@@ -18,19 +17,10 @@ in {
     checkReversePath = "loose";
   };
 
-  # NAT for exit node (masquerade traffic from Tailscale to internet)
-  networking.nat = {
-    enable = true;
-    externalInterface = "ens3";
-    internalInterfaces = [ "tailscale0" ];
-  };
-
-  # Tailscale exit node
   services.tailscale = {
     enable = true;
     useRoutingFeatures = "server";
     authKeyFile = lib.mkIf (secrets.tailscaleAuthKey != null) "/etc/tailscale/authkey";
-    extraUpFlags = [ "--advertise-exit-node" ];
   };
 
   environment.etc."tailscale/authkey" = lib.mkIf (secrets.tailscaleAuthKey != null) {
@@ -38,7 +28,6 @@ in {
     mode = "0400";
   };
 
-  # SSH
   services.openssh = {
     enable = true;
     settings = {
@@ -51,15 +40,15 @@ in {
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO7ZCS39YKZ+E/U0aFXe6qfBTfPOgT6NWN7LoOddv7/0"
   ];
 
-  # Packages
   environment.systemPackages = with pkgs; [
     vim
     wget
     curl
     htop
+    jq
   ];
 
-  time.timeZone = "America/Bogota";
+  time.timeZone = lib.mkDefault "UTC";
 
   system.autoUpgrade = {
     enable = true;
