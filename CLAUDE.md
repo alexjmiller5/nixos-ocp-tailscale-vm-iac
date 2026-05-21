@@ -9,7 +9,7 @@ Reusable building blocks for deploying NixOS to Oracle Cloud Infrastructure (OCI
 **Two outputs:**
 
 1. **Nix flake** — exports `nixosModules.base`: SSH (root key-only), Tailscale daemon, firewall basics, auto-upgrades, sensible defaults. Consumers add their own service modules on top.
-2. **Terraform module** at `terraform/oci-vm/` — provisions one OCI Always Free ARM instance with its own VCN/subnet/IGW. Consumers reference via `module "vm" { source = "git::https://github.com/alexjmiller5/nixos-oci-vm.git//terraform/oci-vm?ref=main" }`.
+2. **Terraform module** at `terraform/oci-vm/` — provisions one OCI Always Free ARM instance with its own VCN/subnet/IGW. Consumers reference via `module "vm" { source = "git::https://github.com/alexjmiller5/nixos-ocp-tailscale-vm-iac.git//terraform/oci-vm?ref=main" }`.
 
 Deployment flow (executed by consuming repos, not here): `terraform apply` provisions Ubuntu 22.04 ARM → `nixos-infect` converts in-place to NixOS 25.11 → consumer's flake.nix wires `base` + service module(s) + hardware-configuration → `nixos-rebuild switch`.
 
