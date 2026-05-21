@@ -6,10 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Oracle Cloud NixOS infrastructure that provisions Always Free ARM instances and installs NixOS via nixos-infect. Intentionally separates Terraform (infrastructure provisioning) from nixos-infect (OS installation).
 
-**Two VMs share the Always Free tier (4 OCPU / 24GB RAM / 200GB boot total):**
-
-- **Root (`/`)** — Tailscale exit node in `sa-bogota-1` (1 OCPU, 6GB, 50GB boot)
-
+- **Root (`/`)** — Tailscale exit node in `<region>` (1 OCPU, 6GB, 50GB boot)
 
 ## Commands
 
@@ -19,7 +16,7 @@ All operations go through `just`:
 
 ```bash
 just init               # terraform init
-just oci-auth           # OCI session auth (sa-bogota-1 region, DEFAULT profile)
+just oci-auth           # OCI session auth (`<region>` region, DEFAULT profile)
 just plan               # terraform plan
 just apply              # terraform apply
 just destroy            # terraform destroy
@@ -47,7 +44,7 @@ just update             # nix flake update
 
 - OCI provider with SecurityToken auth (tokens expire — re-auth with `just oci-auth`)
 - VCN (10.0.0.0/16) + subnet (10.0.0.0/24) + internet gateway
-- VM.Standard.A1.Flex instance (ARM64, 1 OCPU, 6GB RAM, 50GB boot) in sa-bogota-1
+- VM.Standard.A1.Flex instance (ARM64, 1 OCPU, 6GB RAM, 50GB boot) in `<region>`
 - Ubuntu 22.04 as base image (converted to NixOS by nixos-infect)
 
 **NixOS** (`flake.nix`, `configuration.nix`):
@@ -61,7 +58,7 @@ just update             # nix flake update
 **Secrets** (`secrets.nix` — gitignored):
 
 - Contains `{ tailscaleAuthKey = "<auth-key>" }`, conditionally imported with null fallback
-- Each VM needs its own Tailscale auth key
+- VM needs its own Tailscale auth key
 - SSH key (Ed25519) duplicated in `variables.tf` and `configuration.nix` — keep in sync
 
 ## Key Constraints
@@ -71,5 +68,3 @@ just update             # nix flake update
 - External interface is `ens3` — used in NAT config (exit node only)
 - Terraform state is local (no remote backend) — each directory has its own state
 - `hardware-configuration.nix` is generated on the server, not in this repo — fetch it after first install
-- Always Free tier resources are shared: 4 OCPU, 24GB RAM, 200GB boot across both VMs (currently using 3/4 OCPU, 18/24GB, 100/200GB)
-- Tailscale Funnel requires ACL policy to allow funnel for the changedetection node

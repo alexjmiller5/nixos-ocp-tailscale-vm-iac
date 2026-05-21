@@ -7,7 +7,7 @@ variable "ssh_public_key" {
 variable "region" {
   description = "OCI region"
   type        = string
-  default     = "sa-bogota-1"
+  default     = "<region>"
 }
 
 variable "instance_shape" {

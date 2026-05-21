@@ -10,7 +10,7 @@ init:
 
 # Authenticate OCI session with default region and profile
 oci-auth:
-    oci session authenticate --region sa-bogota-1 --profile-name default
+    oci session authenticate --region <region> --profile-name default
 
 # Plan infrastructure changes
 plan:
